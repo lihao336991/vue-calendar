@@ -4,7 +4,7 @@
 ## 需求
 最近业务需求需要一个日历组件，要求可切换周视图和月视图，并且可以显示日程安排及事件标注。
 
-看了下网上已有的日历组件，[fullcalendar](https://github.com/fullcalendar/fullcalendar)插件star还挺多的，文档也挺全面的，但是使用起来不够简便，和我司的应用场景也有些许出入，考虑再三决定还是重新封装一个日历组件。也参考了一些网上
+看了下网上已有的日历组件，[fullcalendar](https://github.com/fullcalendar/fullcalendar)插件star还挺多的，文档也挺全面的，但是使用起来不够简便，和我司的应用场景也有些许出入，考虑再三决定还是重新封装一个日历组件。
 
 ## 组件封装
 整体思路如下：
