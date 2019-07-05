@@ -193,7 +193,7 @@
         let curWeekDay = startDate.getDay()
 
         // begin date of this table may be some day of last month
-        let diff = parseInt(this.firstDay) - curWeekDay
+        let diff = parseInt(this.firstDay) - curWeekDay + 1
         diff = diff > 0 ? (diff - 7) : diff
 
         startDate.setDate(startDate.getDate() + diff)
@@ -344,7 +344,7 @@
       }
       .top{
         position: absolute;
-        top: 20px;
+        top: -8px;
         left: 0;
         width: 100%;
         text-align: center;
