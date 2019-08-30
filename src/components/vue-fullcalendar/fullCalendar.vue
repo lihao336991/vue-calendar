@@ -83,14 +83,17 @@
       loading: {
         type: Boolean,
         default : false
-      }
+      },
     },
     data () {
       return {
-        currentDate : new Date(),
         tableType: 'week',
-        weekDays: []
+        weekDays: [],
+        currentDate: new Date()
       }
+    },
+    created(){
+
     },
     methods : {
       changeDateRange (start, end, currentStart, current, weekDays) {
@@ -108,7 +111,6 @@
         this.$emit('moreClick', day, event, jsEvent)
       },
       changeType(type){
-        this.currentDate = new Date();
         this.tableType = type;
         this.$emit('changeType', type)
       },

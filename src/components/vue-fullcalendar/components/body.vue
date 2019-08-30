@@ -11,6 +11,7 @@
       </div>
       <div class="dates" ref="dates" v-if="tableType=='month'">
         <Spin v-if="loading" fix></Spin>
+        <!-- absolute so we can make dynamic td -->
         <div class="dates-events">
           <div class="events-week" v-for="week in currentDates" v-if="week[0].isCurMonth || week[week.length-1].isCurMonth">
             <div class="events-day" v-for="day in week" track-by="$index"
@@ -21,11 +22,11 @@
                 <div class="event-item"
                 :class="{selected: showCard == event.id}"
                  v-for="event in day.events"
-                  :style="`background-color:${event.color ? event.color : '#C7E6FD'}`"
+                  :style="`background-color: ${showCard == event.id ? (event.selectedColor||'#C7E6FD') : (event.color||'#C7E6FD')}`"
                   @click="eventClick(event,$event)">
                   <span :class="`icon icon${event.id%4}`">{{event.name}}</span>
-                  <span class="info">{{isBegin(event, day.date, day.weekDay)}}</span>
-                  <div class="card" v-if="event &&showCard == event.id" @click.stop>
+                  <p class="info">{{isBegin(event, day.date, day.weekDay)}}</p>
+                  <div id="card" :class="cardClass" v-if="event &&showCard == event.id" @click.stop>
                     <slot name="body-card"></slot>
                   </div>
                 </div>
@@ -36,6 +37,9 @@
       </div>
       <div class="time" ref="time" v-else-if="tableType=='week'">
         <Spin v-if="loading" fix></Spin>
+        <!-- <div class="column" v-for="day in weekDate" v-if="weekDate.length">
+          <div class="single" v-for="time in timeDivide"></div>
+        </div> -->
         <div class="row" v-for="(time,index) in timeDivide">
           <div class="left-info" v-if="tableType=='week'">
             <div class="time-info first" v-if="index==0">
@@ -54,12 +58,12 @@
             <div class="event-box" v-if="item.events.length">
               <div class="event-item" v-for="event in item.events"
                 :class="{selected: showCard == event.id}"
-              :style="`background-color:${event.color ? event.color : '#C7E6FD'}`"
+              :style="`background-color: ${showCard == event.id ? (event.selectedColor||'#C7E6FD') : (event.color||'#C7E6FD')}`"
                 v-if="isTheday(item.date, event.start) && isInTime(time, event.start)"
                 @click="eventClick(event,$event)">
                 <span :class="`icon icon${event.id%4}`">{{event.name}}</span>
-                <span class="info">{{event.title}}</span>
-                <div class="card" v-if="event && showCard == event.id" @click.stop>
+                <p class="info">{{event.title}}</p>
+                <div id="card" :class="cardClass" v-if="event && showCard == event.id" @click.stop>
                   <slot name="body-card"></slot>
                 </div>
               </div>
@@ -78,8 +82,7 @@
     props : {
       currentDate : {},
       events      : {
-        type: Array,
-        default: []
+        type: Array
       },
       weekNames   : {
         type : Array,
@@ -110,7 +113,6 @@
       })
       // 监听header组件事件
       bus.$on('changeWeekDays', res=>{
-
       })
     },
     data () {
@@ -139,6 +141,8 @@
           label: '晚上'
         }],
         showCard: -1,
+        cardLeft: 0,
+        cardRight: 0,
       }
     },
     
@@ -257,6 +261,7 @@
           // 加上时间戳后判断时间段
           let hour = day.getHours()
           let week = day.getDay()
+          week == 0 ? week = 7: ''
           if (this.timeDivide[0].start < hour < this.timeDivide[0].end) {
               event.time = 0
           } else if (this.timeDivide[1].start < hour < this.timeDivide[1].end) {
@@ -303,13 +308,28 @@
       },
       dayClick(day, jsEvent) {
         console.log('dayClick')
-        this.$emit('dayclick', day, jsEvent)
+        // this.$emit('dayclick', day, jsEvent)
       },
       eventClick(event, jsEvent) {
-        console.log(event,jsEvent, 'evenvet')
+        // console.log(event,jsEvent, 'evenvet')
         this.showCard = event.id
         jsEvent.stopPropagation()
+        // let pos = this.computePos(jsEvent.target)
         this.$emit('eventclick', event, jsEvent)
+        let x = jsEvent.x
+        let y = jsEvent.y
+        console.log(jsEvent)
+        // 判断出左右中三边界的取值范围进而分配class
+        if (x > 400 && x < window.innerWidth - 200) {
+          this.cardClass = "center-card"
+        } else if (x <= 400){
+          this.cardClass= "left-card"
+        } else {
+          this.cardClass= "right-card"
+        }
+        if (y > window.innerHeight - 300) {
+          this.cardClass += ' '+'bottom-card'
+        }
       },
     }
   }
@@ -345,7 +365,6 @@
       .top{
         position: absolute;
         top: -8px;
-        left: 0;
         width: 100%;
         text-align: center;
       }
@@ -393,7 +412,7 @@
             }
             &.not-cur-month{
               .day-number{
-                color:#8B8F94;
+                color:#ECECED;
               }
             }
 
@@ -410,12 +429,13 @@
                 background-color:#C7E6FD;
                 margin-bottom:2px;
                 color: rgba(0,0,0,.87);
-                padding:0 0 0 4px;
-                height: 30px;
+                padding:8px 0 8px 4px;
+                height: auto;
                 line-height: 30px;
-                position: relative;
                 display: flex;
-                align-items: center;
+                // transform:translate(0,0);
+                align-items: flex-start;
+                position: relative;
                 border-radius: 4px;
                 &.is-end{
                   display: none;
@@ -427,9 +447,9 @@
                   display: none;
                 }
                 .icon{
-                  width: 20px;
-                  height: 20px;
-                  line-height: 20px;
+                  width: 18px;
+                  height: 18px;
+                  line-height: 18px;
                   border-radius: 10px;
                   text-align:center;
                   color: #fff;
@@ -449,35 +469,55 @@
                 }
                 .info{
                   width: calc(100% - 30px);
-                  overflow: hidden;
-                  white-space: nowrap;
-                  text-overflow: ellipsis;
                   display: inline-block;
                   margin-left: 5px;
+                  line-height: 18px;
+                  word-break: break-all;
+                  word-wrap: break-word;
+                  font-size: 12px;
                 }
-                .card{
+                #card{
                   cursor: initial;
                   position: absolute;
                   z-index: 999;
-                  top: 40px;
-                  left: calc(50% - 125px);
-                  width: 250px;
+                  min-width: 250px;
                   height: auto;
+                  left: 50%;
+                  top: calc(100% + 10px);
+                  transform: translate(-50%, 0);
                   min-height: 100px;
                   background: #fff;
                   // border: 1px solid #eee;
                   box-shadow:0px 2px 10px 0px rgba(0,0,0,0.1);
                   border-radius: 4px;
                   overflow: hidden;
+                  &.left-card{
+                    left: 0;
+                    transform: translate(0,0);
+                  }
+                  &.right-card{
+                    right: 0;
+                    left: auto;
+                    transform: translate(0,0);
+                  }
+                  &.bottom-card{
+                    top: auto;
+                    bottom: calc(100% + 10px);
+                  }
+                }
+
+                &:hover{
+                  .info{
+                    // font-weight: bold;
+                  }
                 }
                 &.selected{
                   .info{
                     color: #fff;
                     font-weight: normal;
                   }
-                  background-color: #5272FF !important;
                   .icon{
-                    background-color: #5272FF !important;
+                    background-color: transparent !important;
                   }
                 }
               }
@@ -547,6 +587,8 @@
     }
     .time{
       position: relative;
+      // overflow: auto;
+      // max-height: calc(100vh - 280px);
       .row{
         width: 100%;
         display: flex;
@@ -570,19 +612,18 @@
           background-color:#C7E6FD;
           margin-bottom:2px;
           color: rgba(0,0,0,.87);
-          padding:0 0 0 4px;
-          height: 30px;
+          padding:8px 0 8px 4px;
+          height: auto;
           line-height: 30px;
-          white-space: nowrap;
-          text-overflow: ellipsis;
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           position: relative;
           border-radius: 4px;
+          // transform:translate(0,0);
           .icon{
-            width: 20px;
-            height: 20px;
-            line-height: 20px;
+            width: 18px;
+            height: 18px;
+            line-height: 18px;
             border-radius: 10px;
             text-align:center;
             color: #fff;
@@ -601,35 +642,56 @@
             }
           }
           .info{
+            
             width: calc(100% - 30px);
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
             display: inline-block;
             margin-left: 5px;
+            line-height: 18px;
+            word-break: break-all;
+            word-wrap: break-word;
+            font-size: 12px;
           }
-          .card{
+          #card{
             cursor: initial;
             position: absolute;
             z-index: 999;
-            top: 40px;
-            left: calc(50% - 125px);
-            width: 250px;
+            min-width: 250px;
             height: auto;
+            left: 50%;
+            top: calc(100% + 10px);
+            transform: translate(-50%, 0);
             min-height: 100px;
             background: #fff;
             box-shadow:0px 2px 10px 0px rgba(0,0,0,0.1);
             border-radius: 4px;
             overflow: hidden;
+            &.left-card{
+              left: 0;
+              transform: translate(0,0);
+            }
+            &.right-card{
+              right: 0;
+              left: auto;
+              transform: translate(0,0);
+            }
+            &.bottom-card{
+              top: auto;
+              bottom: calc(100% + 10px);
+            }
+          }
+          &:hover{
+            .info{
+              // font-weight: bold;
+            }
           }
           &.selected{
             .info{
               color: #fff;
               font-weight: normal;
             }
-            background-color: #5272FF !important;
+            // background-color: #5272FF !important;
             .icon{
-              background-color: #5272FF !important;
+              background-color: transparent !important;
             }
           }
         }

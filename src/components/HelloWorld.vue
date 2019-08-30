@@ -3,7 +3,7 @@
     <full-calendar :events="fcEvents" @eventClick="fetchEvent" lang="zh" @change="changeDateRange">
       <template slot="fc-body-card">
           <div class="card-content"  v-if="interviewEvent">
-              <p class="card-info">{{interviewEvent.title}}</p>
+              <p class="card-info">{{interviewEvent.weekDay}}{{interviewEvent.title}}</p>
               <p class="card-name">{{interviewEvent.name}}</p>
               <!-- <p class="card-info">手机：{{interviewEvent.data.cv.contact.mobile}}</p> -->
               <p class="card-info">id:{{interviewEvent.id}}</p>
@@ -32,7 +32,7 @@ export default {
   data(){
     return{
       fcEvents: [],
-      interviewEvent: {}
+      interviewEvent: {},
     }
   },
   created(){

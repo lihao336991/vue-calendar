@@ -34,7 +34,7 @@
         title      : '',
         leftArrow  : '<',
         rightArrow : '>',
-        headDate : new Date()
+        headDate : new Date('2019-05-17 08:00:00')
       }
     },
     watch : {
